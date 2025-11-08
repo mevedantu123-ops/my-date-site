@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Our Little Plan</title>
+<style>
+html,body{
+  margin:0;height:100%;overflow:hidden;
+  background:linear-gradient(160deg,#fff4f7,#ffeefc);
+  font-family:"Poppins",sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  color:#2b2b2b;
+}
+button{
+  padding:12px 20px;border:none;border-radius:12px;
+  font-size:17px;font-weight:600;cursor:pointer;transition:.25s;
+}
+#yes{background:#ffc2d1;color:#5a0012;margin-right:10px;}
+#no{background:#fff6f6;color:#8b1a20;position:relative;}
+.scene{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  opacity:0;transition:opacity 1.3s ease;
+}
+.scene.show{opacity:1;}
+.text{font-size:20px;line-height:1.5;padding:0 20px;}
+.small{font-size:14px;opacity:.7;margin-top:8px;}
+.secret{position:absolute;bottom:6px;right:8px;font-size:10px;opacity:.25;}
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.7);color:#fff;padding:10px 14px;
+  border-radius:10px;font-size:14px;animation:fade 1.6s forwards;
+}
+@keyframes fade{0%{opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{opacity:0;}}
+#hearts span{
+  position:absolute;font-size:20px;opacity:.2;
+  animation:rise 12s linear infinite;
+}
+@keyframes rise{
+  0%{transform:translateY(100vh) scale(.8);}
+  100%{transform:translateY(-10vh) scale(1);}
+}
+</style>
+</head>
+<body>
+
+<div id="hearts"></div>
+
+<!-- intro -->
+<div class="scene show" id="intro">
+  <div class="text">
+    So hey it’s Sunday tomorrow,<br>
+    so I made something for you.<br>
+    Click next only if you’re ready for a surprise 💌
+  </div>
+  <div style="margin-top:22px;">
+    <button id="yes">Yes ❤️</button>
+    <button id="no">No 💔</button>
+  </div>
+</div>
+
+<!-- scenes -->
+<div class="scene" id="s1"><div class="text">So — here’s the plan.<br>We’re going on a little road trip to Gondia 🏍️💨</div></div>
+<div class="scene" id="s2"><div class="text">We’ll stop by a cozy café ☕️</div></div>
+<div class="scene" id="s3"><div class="text">Do some shopping 🛍️</div></div>
+<div class="scene" id="s4"><div class="text">Enjoy the ride together 😁<br><span class="small">And so that’s the plan.</span></div></div>
+<div class="scene" id="s5"><div class="text">Perfect, can’t wait — it’s a date ❤️<br><span class="small">Can’t wait for tomorrow</span></div><p class="secret">💌 made this just for you</p></div>
+
+<audio id="bgm" src="bgm.mp3" preload="auto" loop></audio>
+
+<script>
+const bgm=document.getElementById("bgm");
+bgm.volume=0.3;
+
+const noLines=[
+ "Wait… you sure about that?",
+ "Plz, Yes kal se pakka padhunga 🥹",
+ "Ouch, mera dil 💔😭",
+ "System shutting down from rejection 💔",
+ "Still no? You’re making this harder than my exams 😩",
+ "You’ve activated heartbreak mode 🥀",
+ "Okay fine… I’ll just sit here dramatically 😢",
+ "To fix, please press YES immediately 😌",
+ "Kidding—pls don’t say no 🥺",
+ "Please, 🥹🥹"
+];
+
+let noCount=0,dodge=false;
+const noBtn=document.getElementById("no");
+const yesBtn=document.getElementById("yes");
+const intro=document.getElementById("intro");
+const scenes=[...document.querySelectorAll(".scene")].filter(s=>s.id!=="intro");
+
+/* funny no behaviour */
+function toast(txt){
+ const t=document.createElement("div");
+ t.className="toast";t.textContent=txt;
+ document.body.appendChild(t);
+ setTimeout(()=>t.remove(),1500);
+}
+noBtn.onclick=()=>{
+ toast(noLines[Math.min(noCount,noLines.length-1)]);
+ noCount++;
+ if(noCount>2&&!dodge){dodge=true;moveNo();}
+};
+function moveNo(){
+ if(!dodge)return;
+ noBtn.style.transform=`translate(${Math.random()*100-50}px,${Math.random()*60-30}px)`;
+ setTimeout(()=>moveNo(),1000);
+}
+
+/* yes starts movie */
+yesBtn.onclick=()=>{
+ dodge=false;
+ yesBtn.disabled=true;noBtn.disabled=true;
+ bgm.play().catch(()=>{}); // audio start on user gesture
+ intro.classList.remove("show");
+ setTimeout(()=>{intro.remove();startMovie();},700);
+};
+
+/* movie sequence */
+const durations=[3200,3200,3200,5000,6000];
+function startMovie(){
+ let i=0;
+ function showNext(){
+   if(i>0)scenes[i-1].classList.remove("show");
+   if(i<scenes.length){
+     scenes[i].classList.add("show");
+     setTimeout(showNext,durations[i]);
+     i++;
+   }else{fadeOut();}
+ }
+ showNext();
+}
+function fadeOut(){
+ let v=0.3;
+ const fade=setInterval(()=>{
+   v-=0.02;bgm.volume=Math.max(0,v);
+   if(v<=0){clearInterval(fade);bgm.pause();}
+ },200);
+}
+
+/* floating hearts */
+const hearts=document.getElementById("hearts");
+for(let i=0;i<15;i++){
+ const h=document.createElement("span");
+ h.textContent="❤️";
+ h.style.left=Math.random()*100+"%";
+ h.style.fontSize=(12+Math.random()*20)+"px";
+ h.style.animationDelay=Math.random()*10+"s";
+ hearts.appendChild(h);
+}
+</script>
+</body>
+</html>
